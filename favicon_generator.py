@@ -2,10 +2,10 @@ import argparse, json, os
 from pathlib import Path
 from PIL import Image, ImageOps
 
-# Common favicon/icon sizes
-ICO_SIZES   = [16, 32, 48]  # bundled into favicon.ico
-PNG_SIZES   = [16, 32, 180, 192, 256, 384, 512]  # written as individual PNGs
-MS_TILE     = 150  # browserconfig tile
+
+ICO_SIZES   = [16, 32, 48]  
+PNG_SIZES   = [16, 32, 180, 192, 256, 384, 512]  
+MS_TILE     = 150  
 
 def square_image(im: Image.Image, mode: str = "pad", bg=(0,0,0,0)) -> Image.Image:
     """
@@ -44,11 +44,8 @@ def main():
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
 
-    # Load image
     src = Path(args.input)
     im = Image.open(src).convert("RGBA")
-
-    # Square it
     bg = args.bg.lstrip("#")
     if len(bg) in (6,8):
         r = int(bg[0:2], 16); g = int(bg[2:4], 16); b = int(bg[4:6], 16)
@@ -57,11 +54,9 @@ def main():
         r,g,b,a = 0,0,0,0
     im_sq = square_image(im, mode=args.mode, bg=(r,g,b,a))
 
-    # Write favicon.ico with multiple sizes
     ico_sizes = [(s, s) for s in ICO_SIZES]
     im_sq.save(out / "favicon.ico", format="ICO", sizes=ico_sizes)
 
-    # Individual PNGs
     save_png(im_sq, 16,  out, "favicon-16x16")
     save_png(im_sq, 32,  out, "favicon-32x32")
     save_png(im_sq, 180, out, "apple-touch-icon")
@@ -69,7 +64,6 @@ def main():
     save_png(im_sq, 512, out, "android-chrome-512x512")
     save_png(im_sq, MS_TILE, out, f"mstile-{MS_TILE}x{MS_TILE}")
 
-    # Optional extra PNGs
     for s in [256, 384]:
         save_png(im_sq, s, out, f"icon-{s}x{s}")
 
@@ -87,7 +81,6 @@ def main():
     }
     (out / "site.webmanifest").write_text(json.dumps(manifest, indent=2))
 
-    # browserconfig.xml (Windows tiles)
     browserconfig = f"""<?xml version="1.0" encoding="utf-8"?>
 <browserconfig>
   <msapplication>
@@ -100,7 +93,6 @@ def main():
 """
     (out / "browserconfig.xml").write_text(browserconfig)
 
-    # HTML snippet
     html = f"""<!-- Favicon & app icons -->
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -119,3 +111,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
